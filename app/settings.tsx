@@ -1,0 +1,187 @@
+import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  cancelDailyReminder,
+  getScheduledReminder,
+  scheduleDailyReminder,
+} from '../services/notifications';
+
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const MINUTES = [0, 15, 30, 45];
+
+function pad(n: number) {
+  return n.toString().padStart(2, '0');
+}
+
+function formatTime(hour: number, minute: number) {
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const h = hour % 12 || 12;
+  return `${h}:${pad(minute)} ${ampm}`;
+}
+
+export default function SettingsScreen() {
+  const [enabled, setEnabled] = useState(false);
+  const [hour, setHour] = useState(7);
+  const [minute, setMinute] = useState(0);
+
+  useEffect(() => {
+    getScheduledReminder().then(reminder => {
+      if (reminder) {
+        setEnabled(true);
+        setHour(reminder.hour);
+        setMinute(reminder.minute);
+      }
+    });
+  }, []);
+
+  async function handleToggle(value: boolean) {
+    setEnabled(value);
+    if (value) {
+      await scheduleDailyReminder(hour, minute);
+      Alert.alert('Reminder set', `You'll be reminded daily at ${formatTime(hour, minute)}`);
+    } else {
+      await cancelDailyReminder();
+    }
+  }
+
+  async function handleTimeChange(newHour: number, newMinute: number) {
+    setHour(newHour);
+    setMinute(newMinute);
+    if (enabled) {
+      await scheduleDailyReminder(newHour, newMinute);
+    }
+  }
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Settings</Text>
+
+        {/* Daily Reminder */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Daily Reminder</Text>
+          <View style={styles.row}>
+            <View>
+              <Text style={styles.rowTitle}>Enable reminder</Text>
+              <Text style={styles.rowSub}>Get a daily nudge to reflect</Text>
+            </View>
+            <Switch
+              value={enabled}
+              onValueChange={handleToggle}
+              trackColor={{ false: '#1A2E28', true: '#1DB954' }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
+
+          {enabled && (
+            <>
+              <Text style={styles.timeLabel}>Reminder time: {formatTime(hour, minute)}</Text>
+
+              <Text style={styles.pickerLabel}>Hour</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.picker}>
+                {HOURS.map(h => (
+                  <TouchableOpacity
+                    key={h}
+                    style={[styles.chip, h === hour && styles.chipActive]}
+                    onPress={() => handleTimeChange(h, minute)}
+                  >
+                    <Text style={[styles.chipText, h === hour && styles.chipTextActive]}>
+                      {pad(h)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              <Text style={styles.pickerLabel}>Minute</Text>
+              <View style={styles.minuteRow}>
+                {MINUTES.map(m => (
+                  <TouchableOpacity
+                    key={m}
+                    style={[styles.chip, m === minute && styles.chipActive]}
+                    onPress={() => handleTimeChange(hour, m)}
+                  >
+                    <Text style={[styles.chipText, m === minute && styles.chipTextActive]}>
+                      :{pad(m)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </>
+          )}
+        </View>
+
+        {/* About */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>About</Text>
+          <View style={styles.aboutCard}>
+            <Text style={styles.appName}>Athar</Text>
+            <Text style={styles.aboutText}>
+              A daily Quran reflection journal. Build a lasting connection beyond Ramadan, one verse at a time.
+            </Text>
+            <Text style={styles.version}>v1.0.0 · Quran Foundation Hackathon 2026</Text>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: '#0D1F1A' },
+  content: { padding: 20, paddingBottom: 40 },
+  title: { color: '#FFFFFF', fontSize: 26, fontWeight: '700', marginBottom: 28 },
+  section: { marginBottom: 32 },
+  sectionLabel: {
+    color: '#4A6B63',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    marginBottom: 12,
+  },
+  row: {
+    backgroundColor: '#1A2E28',
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  rowTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+  rowSub: { color: '#4A6B63', fontSize: 12, marginTop: 2 },
+  timeLabel: {
+    color: '#1DB954',
+    fontSize: 15,
+    fontWeight: '600',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  pickerLabel: { color: '#8AABA3', fontSize: 12, marginTop: 12, marginBottom: 8 },
+  picker: { flexDirection: 'row' },
+  minuteRow: { flexDirection: 'row', gap: 8 },
+  chip: {
+    backgroundColor: '#1A2E28',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  chipActive: { backgroundColor: '#1DB954' },
+  chipText: { color: '#8AABA3', fontSize: 14, fontWeight: '600' },
+  chipTextActive: { color: '#0D1F1A' },
+  aboutCard: { backgroundColor: '#1A2E28', borderRadius: 16, padding: 16 },
+  appName: { color: '#FFFFFF', fontSize: 18, fontWeight: '700', marginBottom: 8 },
+  aboutText: { color: '#8AABA3', fontSize: 14, lineHeight: 22 },
+  version: { color: '#4A6B63', fontSize: 12, marginTop: 12 },
+});
