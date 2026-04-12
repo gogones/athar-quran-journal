@@ -17,12 +17,12 @@ export function useJournal() {
 
   const save = useCallback(async (
     entry: Omit<JournalEntry, 'id' | 'createdAt'>
-  ): Promise<{ entry: JournalEntry; newStreak: number }> => {
+  ): Promise<{ entry: JournalEntry; newStreak: number; streakReset: boolean }> => {
     const saved = await saveJournalEntry(entry);
-    const newStreak = await updateStreak();
+    const { newStreak, reset: streakReset } = await updateStreak();
     setTodayEntry(saved);
     setEntries(prev => [saved, ...prev.filter(e => e.date !== entry.date)]);
-    return { entry: saved, newStreak };
+    return { entry: saved, newStreak, streakReset };
   }, []);
 
   return { entries, todayEntry, loading, save, reload: load };

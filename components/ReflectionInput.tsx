@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 interface Props {
   initialValue?: string;
@@ -20,6 +21,7 @@ export default function ReflectionInput({ initialValue = '', onSave, saved }: Pr
 
   async function handleSave() {
     if (!text.trim()) return;
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setSaving(true);
     await onSave(text.trim());
     setSaving(false);

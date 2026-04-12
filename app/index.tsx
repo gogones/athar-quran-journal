@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   ScrollView,
   StyleSheet,
@@ -9,11 +8,22 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AyahCard from '../components/AyahCard';
+import AyahCardSkeleton from '../components/AyahCardSkeleton';
 import ReflectionInput from '../components/ReflectionInput';
 import StreakBadge from '../components/StreakBadge';
 import { fetchDailyVerse, Verse } from '../services/quranApi';
 import { useJournal } from '../hooks/useJournal';
 import { useStreak } from '../hooks/useStreak';
+
+const MILESTONES: Record<number, { title: string; body: string }> = {
+  7:   { title: '🌟 One Week!',    body: "7 days of reflection. You're building something real. May Allah bless your consistency." },
+  30:  { title: '🏆 One Month!',   body: "30 days strong. A full month of tadabbur. This is what lasting change looks like." },
+  100: { title: '💎 100 Days!',    body: "100 reflections. SubhanAllah — you've made the Quran a daily companion. Keep going." },
+};
+
+function getMilestoneMessage(streak: number): { title: string; body: string } | null {
+  return MILESTONES[streak] ?? null;
+}
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -43,7 +53,7 @@ export default function HomeScreen() {
 
   async function handleSave(text: string) {
     if (!verse) return;
-    const { newStreak } = await save({
+    const { newStreak, streakReset } = await save({
       date: new Date().toISOString().split('T')[0],
       verseKey: verse.verse_key,
       verseText: verse.text_uthmani,
@@ -51,8 +61,15 @@ export default function HomeScreen() {
       reflection: text,
     });
     setStreak(newStreak);
-    if (newStreak > 1) {
-      Alert.alert('🔥 Streak!', `You've reflected for ${newStreak} days in a row. Keep going!`);
+    if (streakReset) {
+      Alert.alert('Streak reset', "You missed yesterday — your streak is back to 1. No worries, today is a new start.");
+    } else {
+      const milestone = getMilestoneMessage(newStreak);
+      if (milestone) {
+        Alert.alert(milestone.title, milestone.body);
+      } else if (newStreak > 1) {
+        Alert.alert('🔥 Streak!', `You've reflected for ${newStreak} days in a row. Keep going!`);
+      }
     }
   }
 
@@ -76,9 +93,7 @@ export default function HomeScreen() {
 
         {/* Ayah */}
         {loadingVerse ? (
-          <View style={styles.loadingBox}>
-            <ActivityIndicator color="#1DB954" />
-          </View>
+          <AyahCardSkeleton />
         ) : verseError ? (
           <View style={styles.errorBox}>
             <Text style={styles.errorText}>Could not load verse. Check your connection.</Text>
@@ -126,14 +141,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 12,
-  },
-  loadingBox: {
-    height: 160,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#1A2E28',
-    borderRadius: 16,
-    marginBottom: 20,
   },
   errorBox: {
     padding: 20,

@@ -50,19 +50,20 @@ export async function getStreak(): Promise<number> {
   return raw ? parseInt(raw, 10) : 0;
 }
 
-export async function updateStreak(): Promise<number> {
+export async function updateStreak(): Promise<{ newStreak: number; reset: boolean }> {
   const today = getToday();
   const lastActive = await AsyncStorage.getItem(KEYS.LAST_ACTIVE);
   const currentStreak = await getStreak();
 
-  if (lastActive === today) return currentStreak; // already counted today
+  if (lastActive === today) return { newStreak: currentStreak, reset: false }; // already counted today
 
   const yesterday = getDateOffset(-1);
-  const newStreak = lastActive === yesterday ? currentStreak + 1 : 1;
+  const continued = lastActive === yesterday;
+  const newStreak = continued ? currentStreak + 1 : 1;
 
   await AsyncStorage.setItem(KEYS.STREAK, newStreak.toString());
   await AsyncStorage.setItem(KEYS.LAST_ACTIVE, today);
-  return newStreak;
+  return { newStreak, reset: !continued && currentStreak > 1 };
 }
 
 // ── User ID ──────────────────────────────────────────────

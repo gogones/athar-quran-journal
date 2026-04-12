@@ -34,8 +34,20 @@ export default function AyahCard({ verseKey, arabic, translation }: Props) {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.verseKey}>{verseKey}</Text>
+      {/* Header row */}
+      <View style={styles.header}>
+        <Text style={styles.verseKey}>{verseKey}</Text>
+      </View>
+
+      {/* Bismillah — shown for all verses except Al-Fatiha (1:1) and At-Tawbah (9:x) */}
+      {verseKey !== '1:1' && !verseKey.startsWith('9:') && (
+        <Text style={styles.bismillah}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</Text>
+      )}
+
       <Text style={styles.arabic}>{arabic}</Text>
+
+      <View style={styles.divider} />
+
       <Text style={styles.translation}>{translation}</Text>
 
       <TouchableOpacity onPress={toggleTafsir} style={styles.tafsirBtn} disabled={loadingTafsir}>
@@ -66,12 +78,29 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 20,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   verseKey: {
     color: '#1DB954',
     fontSize: 12,
     fontWeight: '600',
-    marginBottom: 12,
     letterSpacing: 1,
+  },
+  bismillah: {
+    color: '#4A6B63',
+    fontSize: 16,
+    fontFamily: 'Amiri_400Regular',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#0D2A22',
+    marginVertical: 14,
   },
   arabic: {
     color: '#FFFFFF',
@@ -79,7 +108,6 @@ const styles = StyleSheet.create({
     lineHeight: 44,
     textAlign: 'right',
     fontFamily: 'Amiri_400Regular',
-    marginBottom: 14,
   },
   translation: {
     color: '#C8D8D4',
