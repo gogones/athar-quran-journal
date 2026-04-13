@@ -7,6 +7,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AyahCard from '../components/AyahCard';
 import AyahCardSkeleton from '../components/AyahCardSkeleton';
 import ReflectionInput from '../components/ReflectionInput';
@@ -37,12 +39,20 @@ function formatDate(): string {
 }
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [verse, setVerse] = useState<Verse | null>(null);
   const [loadingVerse, setLoadingVerse] = useState(true);
   const [verseError, setVerseError] = useState(false);
 
   const { todayEntry, save } = useJournal();
   const { streak, setStreak } = useStreak();
+
+  // Onboarding gate — runs after navigator is mounted
+  useEffect(() => {
+    AsyncStorage.getItem('athar:onboarded').then(value => {
+      if (!value) router.replace('/onboarding');
+    });
+  }, []);
 
   useEffect(() => {
     fetchDailyVerse()
