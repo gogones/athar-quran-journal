@@ -10,7 +10,7 @@ Built for the **Quran Foundation Hackathon 2026**.
 
 ## Download
 
-**[Install on Android →](https://expo.dev/accounts/gogones/projects/athar/builds/152ac649-0a26-4e07-9772-6436e2b2ad07)**
+**[Install on Android →](https://expo.dev/accounts/gogones/projects/athar/builds/5e19c3fb-48e6-4098-853d-1f1e8e703707)**
 
 ---
 
@@ -20,10 +20,13 @@ Built for the **Quran Foundation Hackathon 2026**.
 - **Tafsir** — read Ibn Kathir's commentary for each verse, expandable inline
 - **Daily Reflection** — write your personal thoughts on the verse in a private journal
 - **Streak Tracking** — stay consistent with a daily streak counter and milestone celebrations (7, 30, 100 days)
+- **Streak Reset Feedback** — gentle reminder when a day is missed, with encouragement to restart
 - **Journal History** — browse all past reflections with full-text search
+- **Entry Detail** — tap any journal entry to read it in full, with share support
 - **Share** — share any verse and reflection with others
-- **Daily Reminders** — optional push notification at a time you choose
+- **Daily Reminders** — optional push notification at a custom time
 - **Offline Support** — last fetched verse is cached, readable without internet
+- **Quran.com Account** — connect your Quran Foundation account to link your identity
 - **Onboarding** — guided first-launch flow explaining the app's purpose
 
 ---
@@ -32,7 +35,7 @@ Built for the **Quran Foundation Hackathon 2026**.
 
 | Today | Journal | Settings |
 |-------|---------|----------|
-| Verse of the day with Arabic text, translation, and reflection input | History of all past reflections with search | Daily reminder toggle with time picker |
+| Verse of the day with Arabic text, translation, tafsir, and reflection input | History of all past reflections with search | Daily reminder toggle, time picker, and Quran.com account connection |
 
 ---
 
@@ -44,18 +47,27 @@ Built for the **Quran Foundation Hackathon 2026**.
 | Navigation | expo-router (file-based, tab layout) |
 | Storage | @react-native-async-storage/async-storage |
 | Notifications | expo-notifications |
+| Auth | expo-auth-session + expo-web-browser (OAuth2 PKCE) |
 | Font | Amiri (Arabic) via @expo-google-fonts/amiri |
 | Haptics | expo-haptics |
-| API | Quran Foundation Content API (verses, tafsir) |
+| Content API | Quran Foundation Content API (verses, tafsir) |
+| Auth API | Quran Foundation OAuth2 (pre-live) |
 
 ---
 
 ## API Usage
 
-This app uses the **Quran Foundation Content API**:
+This app integrates with two **Quran Foundation APIs**:
 
-- `GET /verses/by_key/:key` — fetch verse with Uthmani text and translation
+### Content API
+- `GET /verses/by_key/:key` — fetch verse with Uthmani script and translation
 - `GET /tafsirs/169/by_ayah/:key` — fetch Ibn Kathir tafsir (English)
+
+### OAuth2 API
+- Authorization Code flow with PKCE
+- Scopes: `openid profile email`
+- Endpoints: `https://prelive-oauth2.quran.foundation/oauth2/`
+- After login: fetches `/userinfo` to display the user's name in Settings
 
 ---
 
@@ -65,10 +77,23 @@ This app uses the **Quran Foundation Content API**:
 git clone https://github.com/gogones/athar-quran-journal.git
 cd athar-quran-journal
 npm install --legacy-peer-deps
+```
+
+Create a `.env` file with your Quran Foundation OAuth credentials:
+
+```env
+EXPO_PUBLIC_QURAN_CLIENT_ID=your_client_id
+EXPO_PUBLIC_QURAN_CLIENT_SECRET=your_client_secret
+EXPO_PUBLIC_QURAN_TOKEN_ENDPOINT=https://prelive-oauth2.quran.foundation/oauth2/token
+```
+
+Then start the dev server:
+
+```bash
 npx expo start
 ```
 
-Scan the QR code with **Expo Go** on your phone.
+Scan the QR code with **Expo Go** on your phone, or build a development APK via EAS.
 
 ---
 
@@ -77,17 +102,18 @@ Scan the QR code with **Expo Go** on your phone.
 ```
 app/
   _layout.tsx        # Tab navigation + font loading + onboarding gate
-  index.tsx          # Today screen (verse + reflection)
+  index.tsx          # Today screen (verse + reflection + streak)
   history.tsx        # Journal history with search
-  settings.tsx       # Notification settings
+  settings.tsx       # Reminder settings + Quran.com account
   onboarding.tsx     # First-launch onboarding slides
   entry/[id].tsx     # Entry detail + share
 components/
-  AyahCard.tsx       # Verse card with tafsir toggle
+  AyahCard.tsx       # Verse card with Arabic text, translation, tafsir toggle
   AyahCardSkeleton   # Shimmer loading state
   ReflectionInput.tsx
   StreakBadge.tsx
 services/
+  auth.ts            # Quran Foundation OAuth2 + token storage + userinfo
   quranApi.ts        # Verse + tafsir fetching with offline cache
   notifications.ts   # Daily reminder scheduling
 hooks/
