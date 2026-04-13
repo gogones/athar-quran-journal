@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { JournalEntry } from '../utils/storage';
 import { useJournal } from '../hooks/useJournal';
+import ProgressCalendar from '../components/ProgressCalendar';
 
 function EntryCard({ entry }: { entry: JournalEntry }) {
   const router = useRouter();
@@ -65,6 +66,10 @@ export default function HistoryScreen() {
         />
       </View>
 
+      <View style={styles.calendarContainer}>
+        <ProgressCalendar entries={entries} />
+      </View>
+
       {entries.length === 0 ? (
         <View style={styles.center}>
           <Text style={styles.emptyIcon}>📖</Text>
@@ -103,6 +108,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
   },
+  calendarContainer: { paddingHorizontal: 20, paddingBottom: 4 },
   list: { padding: 20, paddingTop: 8, paddingBottom: 40 },
   card: {
     backgroundColor: '#1A2E28',

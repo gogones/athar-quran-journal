@@ -14,6 +14,7 @@ import AyahCardSkeleton from '../components/AyahCardSkeleton';
 import ReflectionInput from '../components/ReflectionInput';
 import StreakBadge from '../components/StreakBadge';
 import { fetchDailyVerse, Verse } from '../services/quranApi';
+import { getDailyPrompt } from '../utils/prompts';
 import { useJournal } from '../hooks/useJournal';
 import { useStreak } from '../hooks/useStreak';
 
@@ -120,6 +121,10 @@ export default function HomeScreen() {
         {!loadingVerse && !verseError && (
           <>
             <Text style={styles.sectionLabel}>Reflect</Text>
+            <View style={styles.promptCard}>
+              <Text style={styles.promptLabel}>Today's question</Text>
+              <Text style={styles.promptText}>{getDailyPrompt()}</Text>
+            </View>
             <ReflectionInput
               initialValue={todayEntry?.reflection}
               onSave={handleSave}
@@ -159,4 +164,26 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   errorText: { color: '#FF6B6B', textAlign: 'center' },
+  promptCard: {
+    backgroundColor: '#0F2920',
+    borderLeftWidth: 3,
+    borderLeftColor: '#1DB954',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+  },
+  promptLabel: {
+    color: '#1DB954',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  promptText: {
+    color: '#C8DDD8',
+    fontSize: 14,
+    lineHeight: 22,
+    fontStyle: 'italic',
+  },
 });
