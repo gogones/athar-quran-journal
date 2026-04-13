@@ -16,7 +16,7 @@ export default function EntryDetailScreen() {
       <SafeAreaView style={styles.safe}>
         <View style={styles.center}>
           <Text style={styles.notFound}>Entry not found.</Text>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <TouchableOpacity onPress={() => router.navigate('/history')} style={styles.backBtn}>
             <Text style={styles.backBtnText}>Go back</Text>
           </TouchableOpacity>
         </View>
@@ -36,7 +36,7 @@ export default function EntryDetailScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => router.navigate('/history')} style={styles.backBtn}>
           <Text style={styles.backBtnText}>← Back</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleShare}>
