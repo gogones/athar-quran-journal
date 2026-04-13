@@ -69,7 +69,10 @@ export function isLoggedIn(token: AuthToken | null): boolean {
 
 export function useQuranAuth() {
   // useProxy works in both Expo Go (dev) and standalone builds
-  const redirectUri = AuthSession.makeRedirectUri({ scheme: 'athar' });
+  const redirectUri = AuthSession.makeRedirectUri({
+    useProxy: true,
+    projectNameForProxy: 'athar-quran-journal',
+  });
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     {
