@@ -110,7 +110,8 @@ const API_BASE = 'https://staging.qurancdn.com/api/qdc/v4';
 export async function apiFetch(path: string, token: AuthToken): Promise<Response> {
   return fetch(`${API_BASE}${path}`, {
     headers: {
-      Authorization: `${token.token_type} ${token.access_token}`,
+      'x-auth-token': token.access_token,
+      'x-client-id': CLIENT_ID,
       'Content-Type': 'application/json',
     },
   });
