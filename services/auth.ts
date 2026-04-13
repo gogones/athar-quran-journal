@@ -68,14 +68,15 @@ export function isLoggedIn(token: AuthToken | null): boolean {
 // ── Auth flow ─────────────────────────────────────────────
 
 export function useQuranAuth() {
-  const redirectUri = AuthSession.makeRedirectUri({ scheme: 'com.athar.quranjournal' });
+  // useProxy works in both Expo Go (dev) and standalone builds
+  const redirectUri = AuthSession.makeRedirectUri({ scheme: 'athar' });
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     {
       clientId: CLIENT_ID,
       redirectUri,
-      scopes: ['openid', 'profile', 'email', 'streaks', 'notes'],
-      extraParams: { client_secret: CLIENT_SECRET },
+      scopes: ['openid', 'profile', 'email'],
+      usePKCE: true,
     },
     discovery
   );
@@ -94,7 +95,6 @@ export async function exchangeCodeForToken(
       code,
       redirectUri,
       extraParams: {
-        client_secret: CLIENT_SECRET,
         ...(codeVerifier ? { code_verifier: codeVerifier } : {}),
       },
     },
