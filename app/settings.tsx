@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import * as WebBrowser from 'expo-web-browser';
 import {
   Alert,
   Platform,
@@ -36,6 +37,8 @@ function formatTime(hour: number, minute: number) {
   const h = hour % 12 || 12;
   return `${h}:${pad(minute)} ${ampm}`;
 }
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function SettingsScreen() {
   const [enabled, setEnabled] = useState(false);

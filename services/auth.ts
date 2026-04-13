@@ -2,11 +2,9 @@ import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-WebBrowser.maybeCompleteAuthSession();
-
-const CLIENT_ID = process.env.EXPO_PUBLIC_QURAN_CLIENT_ID!;
-const CLIENT_SECRET = process.env.EXPO_PUBLIC_QURAN_CLIENT_SECRET!;
-const TOKEN_ENDPOINT = process.env.EXPO_PUBLIC_QURAN_TOKEN_ENDPOINT!;
+const CLIENT_ID = process.env.EXPO_PUBLIC_QURAN_CLIENT_ID ?? '';
+const CLIENT_SECRET = process.env.EXPO_PUBLIC_QURAN_CLIENT_SECRET ?? '';
+const TOKEN_ENDPOINT = process.env.EXPO_PUBLIC_QURAN_TOKEN_ENDPOINT ?? 'https://prelive-oauth2.quran.foundation/oauth2/token';
 
 // Pre-live auth base URL
 const AUTH_BASE = 'https://prelive-oauth2.quran.foundation/oauth2';
