@@ -15,6 +15,14 @@ import {
   getScheduledReminder,
   scheduleDailyReminder,
 } from '../services/notifications';
+import {
+  AuthToken,
+  clearToken,
+  exchangeCodeForToken,
+  getStoredToken,
+  isLoggedIn,
+  useQuranAuth,
+} from '../services/auth';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const MINUTES = [0, 15, 30, 45];
@@ -33,6 +41,9 @@ export default function SettingsScreen() {
   const [enabled, setEnabled] = useState(false);
   const [hour, setHour] = useState(7);
   const [minute, setMinute] = useState(0);
+  const [authToken, setAuthToken] = useState<AuthToken | null>(null);
+
+  const { request, response, promptAsync, redirectUri } = useQuranAuth();
 
   useEffect(() => {
     getScheduledReminder().then(reminder => {
@@ -42,7 +53,32 @@ export default function SettingsScreen() {
         setMinute(reminder.minute);
       }
     });
+    getStoredToken().then(setAuthToken);
   }, []);
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { code } = response.params;
+      exchangeCodeForToken(code, redirectUri, request?.codeVerifier)
+        .then(token => {
+          setAuthToken(token);
+          Alert.alert('Connected!', 'Your Quran.com account is now linked.');
+        })
+        .catch(() => Alert.alert('Error', 'Failed to connect account. Please try again.'));
+    }
+  }, [response]);
+
+  async function handleDisconnect() {
+    Alert.alert('Disconnect', 'Remove your Quran.com account from Athar?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Disconnect', style: 'destructive', onPress: async () => {
+          await clearToken();
+          setAuthToken(null);
+        }
+      },
+    ]);
+  }
 
   async function handleToggle(value: boolean) {
     setEnabled(value);
@@ -120,6 +156,36 @@ export default function SettingsScreen() {
           )}
         </View>
 
+        {/* Quran Account */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Quran Account</Text>
+          <View style={styles.row}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rowTitle}>
+                {isLoggedIn(authToken) ? 'Connected' : 'Connect Quran.com'}
+              </Text>
+              <Text style={styles.rowSub}>
+                {isLoggedIn(authToken)
+                  ? 'Your account is linked'
+                  : 'Sync your streak and reflections'}
+              </Text>
+            </View>
+            {isLoggedIn(authToken) ? (
+              <TouchableOpacity onPress={handleDisconnect} style={styles.disconnectBtn}>
+                <Text style={styles.disconnectBtnText}>Disconnect</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => promptAsync()}
+                disabled={!request}
+                style={styles.connectBtn}
+              >
+                <Text style={styles.connectBtnText}>Connect</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
         {/* About */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>About</Text>
@@ -180,6 +246,22 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: '#1DB954' },
   chipText: { color: '#8AABA3', fontSize: 14, fontWeight: '600' },
   chipTextActive: { color: '#0D1F1A' },
+  connectBtn: {
+    backgroundColor: '#1DB954',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  connectBtnText: { color: '#0D1F1A', fontWeight: '700', fontSize: 13 },
+  disconnectBtn: {
+    backgroundColor: '#1A2E28',
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  disconnectBtnText: { color: '#FF6B6B', fontWeight: '600', fontSize: 13 },
   aboutCard: { backgroundColor: '#1A2E28', borderRadius: 16, padding: 16 },
   appName: { color: '#FFFFFF', fontSize: 18, fontWeight: '700', marginBottom: 8 },
   aboutText: { color: '#8AABA3', fontSize: 14, lineHeight: 22 },
