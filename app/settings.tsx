@@ -18,8 +18,11 @@ import {
 } from '../services/notifications';
 import {
   AuthToken,
+  UserProfile,
   clearToken,
   exchangeCodeForToken,
+  fetchUserProfile,
+  getStoredProfile,
   getStoredToken,
   isLoggedIn,
   useQuranAuth,
@@ -45,6 +48,7 @@ export default function SettingsScreen() {
   const [hour, setHour] = useState(7);
   const [minute, setMinute] = useState(0);
   const [authToken, setAuthToken] = useState<AuthToken | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const { request, response, promptAsync, redirectUri } = useQuranAuth();
 
@@ -57,6 +61,7 @@ export default function SettingsScreen() {
       }
     });
     getStoredToken().then(setAuthToken);
+    getStoredProfile().then(setUserProfile);
   }, []);
 
   useEffect(() => {
@@ -65,7 +70,12 @@ export default function SettingsScreen() {
       exchangeCodeForToken(code, redirectUri, request?.codeVerifier)
         .then(token => {
           setAuthToken(token);
-          Alert.alert('Connected!', 'Your Quran.com account is now linked.');
+          return fetchUserProfile(token);
+        })
+        .then(profile => {
+          setUserProfile(profile);
+          const name = profile.name ?? profile.email ?? 'your account';
+          Alert.alert('Connected!', `Welcome, ${name}! Your Quran.com account is now linked.`);
         })
         .catch(() => Alert.alert('Error', 'Failed to connect account. Please try again.'));
     }
@@ -78,6 +88,7 @@ export default function SettingsScreen() {
         text: 'Disconnect', style: 'destructive', onPress: async () => {
           await clearToken();
           setAuthToken(null);
+          setUserProfile(null);
         }
       },
     ]);
@@ -162,16 +173,20 @@ export default function SettingsScreen() {
         {/* Quran Account */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Quran Account</Text>
-          <View style={styles.row}>
+<View style={styles.row}>
             <View style={{ flex: 1 }}>
               <Text style={styles.rowTitle}>
                 {isLoggedIn(authToken) ? 'Connected' : 'Connect Quran.com'}
               </Text>
-              <Text style={styles.rowSub}>
-                {isLoggedIn(authToken)
-                  ? 'Your account is linked'
-                  : 'Sync your streak and reflections'}
-              </Text>
+              {isLoggedIn(authToken) && userProfile?.name ? (
+                <Text style={styles.rowSub}>{userProfile.name}</Text>
+              ) : isLoggedIn(authToken) && userProfile?.email ? (
+                <Text style={styles.rowSub}>{userProfile.email}</Text>
+              ) : (
+                <Text style={styles.rowSub}>
+                  {isLoggedIn(authToken) ? 'Your account is linked' : 'Sync your streak and reflections'}
+                </Text>
+              )}
             </View>
             {isLoggedIn(authToken) ? (
               <TouchableOpacity onPress={handleDisconnect} style={styles.disconnectBtn}>

@@ -10,6 +10,7 @@ const TOKEN_ENDPOINT = process.env.EXPO_PUBLIC_QURAN_TOKEN_ENDPOINT ?? 'https://
 const AUTH_BASE = 'https://prelive-oauth2.quran.foundation/oauth2';
 
 const STORAGE_KEY = 'athar:auth_token';
+const PROFILE_KEY = 'athar:user_profile';
 
 export interface AuthToken {
   access_token: string;
@@ -58,7 +59,24 @@ async function storeToken(token: AuthSession.TokenResponse): Promise<AuthToken> 
 }
 
 export async function clearToken(): Promise<void> {
-  await AsyncStorage.removeItem(STORAGE_KEY);
+  await AsyncStorage.multiRemove([STORAGE_KEY, PROFILE_KEY]);
+}
+
+// ── User profile ──────────────────────────────────────────
+
+export async function getStoredProfile(): Promise<UserProfile | null> {
+  const raw = await AsyncStorage.getItem(PROFILE_KEY);
+  return raw ? JSON.parse(raw) : null;
+}
+
+export async function fetchUserProfile(token: AuthToken): Promise<UserProfile> {
+  const res = await fetch(`${AUTH_BASE}/userinfo`, {
+    headers: { Authorization: `Bearer ${token.access_token}` },
+  });
+  if (!res.ok) throw new Error('Failed to fetch profile');
+  const profile: UserProfile = await res.json();
+  await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  return profile;
 }
 
 export function isLoggedIn(token: AuthToken | null): boolean {
@@ -68,10 +86,9 @@ export function isLoggedIn(token: AuthToken | null): boolean {
 // ── Auth flow ─────────────────────────────────────────────
 
 export function useQuranAuth() {
-  // useProxy works in both Expo Go (dev) and standalone builds
   const redirectUri = AuthSession.makeRedirectUri({
-    useProxy: true,
-    projectNameForProxy: 'athar-quran-journal',
+    scheme: 'athar',
+    path: 'oauth',
   });
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
