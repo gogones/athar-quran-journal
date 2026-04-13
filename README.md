@@ -10,7 +10,7 @@ Built for the **Quran Foundation Hackathon 2026**.
 
 ## Download
 
-**[Install on Android →](https://expo.dev/accounts/gogones/projects/athar/builds/6b358b11-176e-41b9-bd0f-3b846e4e3fc7)**
+**[Install on Android →](https://expo.dev/accounts/gogones/projects/athar/builds/73538898-407f-43a4-9ffc-3e7f5b749761)**
 
 ---
 
