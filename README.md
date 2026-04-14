@@ -10,7 +10,7 @@ Built for the **Quran Foundation Hackathon 2026**.
 
 ## Download
 
-**[Install on Android →](https://expo.dev/accounts/gogones/projects/athar/builds/3138c9bb-da09-49bb-b9e8-00a2a67d4f7f)**
+**[Install on Android →](https://expo.dev/accounts/gogones/projects/athar/builds/ce8a5780-0732-408e-9fe6-a3ff944ffaff)**
 
 ---
 
@@ -26,6 +26,7 @@ Built for the **Quran Foundation Hackathon 2026**.
 - **Share** — share any verse and reflection with others
 - **Daily Reminders** — optional push notification at a custom time
 - **Offline Support** — last fetched verse is cached, readable without internet
+- **Flashcard Review** — tap-to-flip cards built from your own reflections, reinforcing verses you've studied
 - **Quran.com Account** — connect your Quran Foundation account to link your identity
 - **Onboarding** — guided first-launch flow explaining the app's purpose
 
