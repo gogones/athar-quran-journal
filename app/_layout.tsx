@@ -44,6 +44,13 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
+        name="review"
+        options={{
+          title: 'Review',
+          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🃏</Text>,
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
